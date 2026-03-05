@@ -49,14 +49,6 @@ function setTableStatus(id: string, status: TableStatus) {
 let bkCounter = 100;
 const bookingsMap = new Map<string, Booking>();
 
-// seed some bookings for demo
-const today = new Date().toISOString().split("T")[0];
-[
-  { id: "BK-001", table_id: "t1", table_name: "Стол 1", hall: "Основной зал", customer_name: "Ерлан", phone: "+77771112233", date: today, start_time: "14:00", duration: 2, price: 6000, status: "confirmed" as const, created_at: new Date().toISOString() },
-  { id: "BK-002", table_id: "t3", table_name: "Стол 3", hall: "Основной зал", customer_name: "Айдана", phone: "+77774445566", date: today, start_time: "18:00", duration: 2, price: 6000, status: "confirmed" as const, created_at: new Date().toISOString() },
-  { id: "BK-003", table_id: "v1", table_name: "VIP 1", hall: "VIP зал", customer_name: "Арман", phone: "+77779998877", date: today, start_time: "20:00", duration: 3, price: 15000, status: "pending" as const, created_at: new Date().toISOString() },
-].forEach(b => bookingsMap.set(b.id, b));
-
 export function getBookings(): Booking[] {
   return Array.from(bookingsMap.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
@@ -259,3 +251,4 @@ export function getDashboardStats(): DashboardStats {
     revenue_today: revenue,
   };
 }
+
