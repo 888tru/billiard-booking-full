@@ -3,9 +3,22 @@ import type { Slot } from "@/types";
 export default function SlotGrid({ slots, selectedTime, duration, onSelect, loading }: { slots: Slot[]; selectedTime: string | null; duration: number; onSelect: (t: string) => void; loading?: boolean }) {
   if (loading) return <div className="grid grid-cols-4 gap-2">{Array.from({length:16}).map((_,i) => <div key={i} className="h-11 rounded-xl animate-shimmer"/>)}</div>;
   if (!slots.length) return <div className="text-center py-8 text-[var(--color-muted)] text-sm">Нет доступных слотов</div>;
-  const need = Math.max(1, duration) * 2;
-  const canBook = (i: number) => { for (let j = 0; j < need; j++) { if (!slots[i+j]?.available) return false; } return true; };
-  const inRange = (i: number) => { if (!selectedTime) return false; const si = slots.findIndex(s => s.time === selectedTime); return si >= 0 && i >= si && i < si + need; };
+  const isOpen = duration === 0;
+  const need = isOpen ? 1 : Math.max(1, duration) * 2;
+  const canBook = (i: number) => {
+    if (isOpen) return slots[i].available;
+    for (let j = 0; j < need; j++) { if (!slots[i+j]?.available) return false; } return true;
+  };
+  const inRange = (i: number) => {
+    if (!selectedTime) return false;
+    const si = slots.findIndex(s => s.time === selectedTime);
+    if (si < 0) return false;
+    if (isOpen) {
+      // Open time: highlight from selected slot to end of available slots
+      return i >= si && slots[i].available;
+    }
+    return i >= si && i < si + need;
+  };
   return (
     <div className="grid grid-cols-4 gap-2">
       {slots.map((s, i) => {

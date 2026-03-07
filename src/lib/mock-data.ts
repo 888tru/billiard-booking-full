@@ -192,6 +192,16 @@ function generateTimeSlots(openTime: string, closeTime: string): string[] {
   return slots;
 }
 
+// Convert time string to minutes-since-open for proper ordering across midnight
+function toMinutesSinceOpen(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  const [openH] = CLUB.open_time.split(":").map(Number);
+  const mins = h * 60 + m;
+  const openMins = openH * 60;
+  // If time is before open hour (e.g. 00:00-04:00), it's next day
+  return mins < openMins ? mins + 24 * 60 - openMins : mins - openMins;
+}
+
 export function getSlots(tableId: string, date: string): Slot[] {
   const allSlots = generateTimeSlots(CLUB.open_time, CLUB.close_time);
 
@@ -199,10 +209,18 @@ export function getSlots(tableId: string, date: string): Slot[] {
   const bookedTimes = new Set<string>();
   for (const b of bookingsMap.values()) {
     if (b.table_id === tableId && b.date === date && (b.status === "pending" || b.status === "confirmed")) {
-      const [sh, sm] = b.start_time.split(":").map(Number);
-      for (let i = 0; i < b.duration * 2; i++) {
-        const t = sh * 60 + sm + i * 30;
-        bookedTimes.add(`${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`);
+      if (b.duration === 0) {
+        // Open time booking: block from start_time to close
+        const startOffset = toMinutesSinceOpen(b.start_time);
+        for (const slot of allSlots) {
+          if (toMinutesSinceOpen(slot) >= startOffset) bookedTimes.add(slot);
+        }
+      } else {
+        const [sh, sm] = b.start_time.split(":").map(Number);
+        for (let i = 0; i < b.duration * 2; i++) {
+          const t = sh * 60 + sm + i * 30;
+          bookedTimes.add(`${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`);
+        }
       }
     }
   }
@@ -212,22 +230,39 @@ export function getSlots(tableId: string, date: string): Slot[] {
     if (s.table_id === tableId && (s.status === "active" || s.status === "paused")) {
       const startH = new Date(s.start_time).getHours();
       const startM = new Date(s.start_time).getMinutes();
-      const durSlots = s.mode === "open" ? 16 : s.duration * 2;
-      for (let i = 0; i < durSlots; i++) {
-        const t = startH * 60 + startM + i * 30;
-        bookedTimes.add(`${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`);
+      if (s.mode === "open") {
+        // Open session: block from start to close
+        const startStr = `${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}`;
+        const startOffset = toMinutesSinceOpen(startStr);
+        for (const slot of allSlots) {
+          if (toMinutesSinceOpen(slot) >= startOffset) bookedTimes.add(slot);
+        }
+      } else {
+        for (let i = 0; i < s.duration * 2; i++) {
+          const t = startH * 60 + startM + i * 30;
+          bookedTimes.add(`${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`);
+        }
       }
     }
   }
 
   const now = new Date();
   const isToday = date === now.toISOString().split("T")[0];
+  const [openH] = CLUB.open_time.split(":").map(Number);
+  const nowMins = now.getHours() * 60 + now.getMinutes();
 
   return allSlots.map((time) => {
     let past = false;
     if (isToday) {
       const [sh, sm] = time.split(":").map(Number);
-      past = sh < now.getHours() || (sh === now.getHours() && sm <= now.getMinutes());
+      const slotMins = sh * 60 + sm;
+      // Slots after midnight (e.g. 00:00-04:00) are next-day, never past during today's evening
+      if (sh < openH) {
+        // After-midnight slot — only past if current time is also after midnight and past this slot
+        past = nowMins < openH * 60 && nowMins >= slotMins;
+      } else {
+        past = nowMins >= slotMins;
+      }
     }
     return { time, available: !bookedTimes.has(time) && !past };
   });

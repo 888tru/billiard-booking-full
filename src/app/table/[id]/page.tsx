@@ -22,11 +22,12 @@ export default function TablePage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { if (!state.tableId || state.tableId !== id || state.duration === 0) router.replace("/booking"); }, [state.tableId, state.duration, id, router]);
+  useEffect(() => { if (!state.tableId || state.tableId !== id) router.replace("/booking"); }, [state.tableId, id, router]);
   useEffect(() => { if (id && state.date) { setSlots(null); fetch(`/api/slots?table_id=${id}&date=${state.date}`).then(r => r.json()).then(setSlots); } }, [id, state.date]);
 
-  const dur = state.duration || 1;
-  const total = state.pricePerHour * dur;
+  const dur = state.duration;
+  const isOpen = dur === 0;
+  const total = isOpen ? 0 : state.pricePerHour * dur;
   const ok = state.slotTime && name.trim().length >= 2 && phone.replace(/\D/g, "").length >= 11;
 
   const handleBook = async () => {
@@ -64,9 +65,9 @@ export default function TablePage() {
 
       {state.slotTime && (
         <div className="animate-slide-up space-y-6">
-          <div><SectionLabel>Детали</SectionLabel><BookingSummaryCard items={[{ label: "Стол", value: state.tableName || "" }, { label: "Дата", value: fmtDate(state.date) }, { label: "Время", value: `${state.slotTime} — ${endTime(state.slotTime, dur)}` }, { label: "Длительность", value: dur === 0 ? "Открытый счёт" : `${dur} ч` }, { label: "Стоимость", value: `${total.toLocaleString()} ₸`, highlight: true }]} /></div>
+          <div><SectionLabel>Детали</SectionLabel><BookingSummaryCard items={[{ label: "Стол", value: state.tableName || "" }, { label: "Дата", value: fmtDate(state.date) }, { label: "Время", value: isOpen ? `с ${state.slotTime} — до закрытия` : `${state.slotTime} — ${endTime(state.slotTime, dur)}` }, { label: "Длительность", value: isOpen ? "Открытый счёт" : `${dur} ч` }, { label: "Стоимость", value: isOpen ? "По факту" : `${total.toLocaleString()} ₸`, highlight: true }]} /></div>
           <div><SectionLabel>Ваши данные</SectionLabel><BookingForm name={name} phone={phone} onNameChange={setName} onPhoneChange={setPhone} /></div>
-          <ButtonPrimary onClick={handleBook} disabled={!ok} loading={loading}>ЗАБРОНИРОВАТЬ — {total.toLocaleString()} ₸</ButtonPrimary>
+          <ButtonPrimary onClick={handleBook} disabled={!ok} loading={loading}>{isOpen ? "ЗАБРОНИРОВАТЬ — Открытый счёт" : `ЗАБРОНИРОВАТЬ — ${total.toLocaleString()} ₸`}</ButtonPrimary>
         </div>
       )}
     </div>

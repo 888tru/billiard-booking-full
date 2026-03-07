@@ -34,7 +34,7 @@ export default function PaymentPage() {
     <div className="mx-auto max-w-[430px] px-4 pb-8 animate-fade-in">
       <Header title="Оплата" showBack subtitle="Подтвердите бронь" />
       <SectionLabel>Детали заказа</SectionLabel>
-      <div className="mb-6"><BookingSummaryCard items={[{ label: "Стол", value: bk.table_name }, { label: "Зал", value: bk.hall }, { label: "Дата", value: fmtDate(bk.date) }, { label: "Время", value: `${bk.time} — ${endTime(bk.time, bk.duration)}` }, { label: "Клиент", value: bk.customer_name }, { label: "Итого", value: `${bk.price.toLocaleString()} ₸`, highlight: true }]} /></div>
+      <div className="mb-6"><BookingSummaryCard items={[{ label: "Стол", value: bk.table_name }, { label: "Зал", value: bk.hall }, { label: "Дата", value: fmtDate(bk.date) }, { label: "Время", value: bk.duration === 0 ? `с ${bk.time} — до закрытия` : `${bk.time} — ${endTime(bk.time, bk.duration)}` }, { label: "Клиент", value: bk.customer_name }, { label: "Итого", value: bk.duration === 0 ? "По факту" : `${bk.price.toLocaleString()} ₸`, highlight: true }]} /></div>
       <SectionLabel>Способ оплаты</SectionLabel>
       <div className="space-y-3 mb-6">
         <PaymentCard icon={<span className="text-2xl">🔴</span>} label="Kaspi Pay" sublabel="Kaspi Bank" selected={prov === "kaspi"} onSelect={() => setProv("kaspi")} />
@@ -42,7 +42,7 @@ export default function PaymentPage() {
         <PaymentCard icon={<span className="text-xl">G</span>} label="Google Pay" sublabel="Быстрая оплата" selected={prov === "google_pay"} onSelect={() => setProv("google_pay")} />
       </div>
       <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl p-4 mb-6"><div className="flex items-start gap-3"><div className="text-sm">⏱️</div><div><p className="text-xs font-semibold text-amber-400">Слот зарезервирован на 5 минут</p><p className="text-[11px] text-[var(--color-muted)]">Завершите оплату, чтобы подтвердить бронь.</p></div></div></div>
-      <ButtonPrimary onClick={pay} loading={loading}>ОПЛАТИТЬ {bk.price.toLocaleString()} ₸</ButtonPrimary>
+      <ButtonPrimary onClick={pay} loading={loading}>{bk.duration === 0 ? "ПОДТВЕРДИТЬ БРОНЬ" : `ОПЛАТИТЬ ${bk.price.toLocaleString()} ₸`}</ButtonPrimary>
     </div>
   );
 }
