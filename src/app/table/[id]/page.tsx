@@ -22,7 +22,7 @@ export default function TablePage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { if (!state.tableId || state.tableId !== id) router.replace("/booking"); }, [state.tableId, id, router]);
+  useEffect(() => { if (!state.tableId || state.tableId !== id || state.duration === 0) router.replace("/booking"); }, [state.tableId, state.duration, id, router]);
   useEffect(() => { if (id && state.date) { setSlots(null); fetch(`/api/slots?table_id=${id}&date=${state.date}`).then(r => r.json()).then(setSlots); } }, [id, state.date]);
 
   const dur = state.duration || 1;

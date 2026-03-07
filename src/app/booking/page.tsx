@@ -69,7 +69,7 @@ export default function BookingPage() {
           ? Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 rounded-2xl animate-shimmer" />)
           : filtered.length === 0
             ? <p className="text-center py-8 text-[var(--color-muted)] text-sm">Нет столов</p>
-            : filtered.map(t => <TableCard key={t.id} table={t} date={state.date} duration={state.duration || 1} selected={state.tableId === t.id} onSelect={() => selectTable(t.id, t.name, t.price_per_hour)} />)
+            : filtered.map(t => <TableCard key={t.id} table={t} date={state.date} duration={state.duration} selected={state.tableId === t.id} onSelect={() => selectTable(t.id, t.name, t.price_per_hour)} />)
         }
       </div>
 
