@@ -43,7 +43,7 @@ CREATE TABLE tables (
     image_url       TEXT,
     price_per_hour  INT NOT NULL DEFAULT 3000,  -- in tenge
     is_active       BOOLEAN NOT NULL DEFAULT TRUE,
-    status          TEXT NOT NULL DEFAULT 'free'
+lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "Port 3000 freed" || echo "Port 3000 was free"lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "Port 3000 freed" || echo "Port 3000 was free"lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "Port 3000 freed" || echo "Port 3000 was free"lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "Port 3000 freed" || echo "Port 3000 was free"lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "Port 3000 freed" || echo "Port 3000 was free"lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "Port 3000 freed" || echo "Port 3000 was free"lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "Port 3000 freed" || echo "Port 3000 was free"    status          TEXT NOT NULL DEFAULT 'free'
                     CHECK (status IN ('free', 'reserved', 'playing', 'paused')),
     sort_order      INT NOT NULL DEFAULT 0,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()

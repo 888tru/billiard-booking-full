@@ -13,8 +13,8 @@ function fmtISO(d: Date) { return d.toISOString().split("T")[0]; }
 function fmtDay(d: Date) { return d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }); }
 function fmtWd(d: Date) { return d.toLocaleDateString("ru-RU", { weekday: "short" }); }
 
-const DURS = [1, 2, 3, 4, 5, 6, 7, 8, 0];
-const DL: Record<number, string> = { 1:"1 час",2:"2 часа",3:"3 часа",4:"4 часа",5:"5 часов",6:"6 часов",7:"7 часов",8:"8 часов",0:"Открытый" };
+const DURS = [1, 2, 3, 0];
+const DL: Record<number, string> = { 1:"1 час",2:"2 часа",3:"3 часа",0:"Открытый" };
 
 export default function BookingPage() {
   const router = useRouter();
