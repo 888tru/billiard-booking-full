@@ -10,7 +10,7 @@ import ButtonPrimary from "@/components/ButtonPrimary";
 function fmtDate(iso: string) { return new Date(iso + "T00:00:00").toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }); }
 function endTime(t: string, d: number) { const [h, m] = t.split(":").map(Number); return `${String((h + d) % 24).padStart(2, "0")}:${String(m).padStart(2, "0")}`; }
 
-interface PB { booking_id: string; table_name: string; hall: string; date: string; time: string; duration: number; price: number; customer_name: string; phone: string; }
+interface PB { booking_id: string; table_name: string; hall: string; date: string; time: string; duration: number; booking_fee: number; price_per_hour: number; customer_name: string; phone: string; }
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -30,20 +30,52 @@ export default function PaymentPage() {
   };
 
   if (!bk) return null;
+  const isOpen = bk.duration === 0;
+  const fee = bk.booking_fee || 1000;
+
   return (
     <div className="mx-auto max-w-[430px] px-4 pb-8 animate-fade-in">
-      <Header title="Оплата" showBack subtitle="Подтвердите бронь" />
+      <Header title="Оплата брони" showBack subtitle="Подтвердите бронь" />
       <SectionLabel>Детали заказа</SectionLabel>
-      <div className="mb-6"><BookingSummaryCard items={[{ label: "Стол", value: bk.table_name }, { label: "Зал", value: bk.hall }, { label: "Дата", value: fmtDate(bk.date) }, { label: "Время", value: bk.duration === 0 ? `с ${bk.time} — до закрытия` : `${bk.time} — ${endTime(bk.time, bk.duration)}` }, { label: "Клиент", value: bk.customer_name }, { label: "Итого", value: bk.duration === 0 ? "По факту" : `${bk.price.toLocaleString()} ₸`, highlight: true }]} /></div>
+      <div className="mb-6"><BookingSummaryCard items={[
+        { label: "Стол", value: bk.table_name },
+        { label: "Зал", value: bk.hall },
+        { label: "Дата", value: fmtDate(bk.date) },
+        { label: "Время", value: isOpen ? `с ${bk.time} — до закрытия` : `${bk.time} — ${endTime(bk.time, bk.duration)}` },
+        { label: "Длительность", value: isOpen ? "Открытый счёт" : `${bk.duration} ч` },
+        { label: "Клиент", value: bk.customer_name },
+        { label: "Цена за час", value: `${bk.price_per_hour.toLocaleString()} ₸/час` },
+        { label: "Оплата брони", value: `${fee.toLocaleString()} ₸`, highlight: true },
+      ]} /></div>
+
+      <div className="bg-[var(--color-card)] border border-amber-500/20 rounded-2xl p-4 mb-6">
+        <div className="flex items-start gap-3">
+          <span className="text-sm">💡</span>
+          <div>
+            <p className="text-xs font-semibold text-amber-400">Вы оплачиваете только бронь</p>
+            <p className="text-[11px] text-[var(--color-muted)]">Стоимость игры ({bk.price_per_hour.toLocaleString()} ₸/час) оплачивается на месте в клубе.</p>
+          </div>
+        </div>
+      </div>
+
       <SectionLabel>Способ оплаты</SectionLabel>
       <div className="space-y-3 mb-6">
         <PaymentCard icon={<span className="text-2xl">🔴</span>} label="Kaspi Pay" sublabel="Kaspi Bank" selected={prov === "kaspi"} onSelect={() => setProv("kaspi")} />
         <PaymentCard icon={<span className="text-xl"></span>} label="Apple Pay" sublabel="Быстрая оплата" selected={prov === "apple_pay"} onSelect={() => setProv("apple_pay")} />
         <PaymentCard icon={<span className="text-xl">G</span>} label="Google Pay" sublabel="Быстрая оплата" selected={prov === "google_pay"} onSelect={() => setProv("google_pay")} />
       </div>
-      <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl p-4 mb-6"><div className="flex items-start gap-3"><div className="text-sm">⏱️</div><div><p className="text-xs font-semibold text-amber-400">Слот зарезервирован на 5 минут</p><p className="text-[11px] text-[var(--color-muted)]">Завершите оплату, чтобы подтвердить бронь.</p></div></div></div>
-      <ButtonPrimary onClick={pay} loading={loading}>{bk.duration === 0 ? "ПОДТВЕРДИТЬ БРОНЬ" : `ОПЛАТИТЬ ${bk.price.toLocaleString()} ₸`}</ButtonPrimary>
+
+      <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl p-4 mb-6">
+        <div className="flex items-start gap-3">
+          <div className="text-sm">⏱️</div>
+          <div>
+            <p className="text-xs font-semibold text-amber-400">Слот зарезервирован на 5 минут</p>
+            <p className="text-[11px] text-[var(--color-muted)]">Завершите оплату, чтобы подтвердить бронь.</p>
+          </div>
+        </div>
+      </div>
+
+      <ButtonPrimary onClick={pay} loading={loading}>ОПЛАТИТЬ БРОНЬ — {fee.toLocaleString()} ₸</ButtonPrimary>
     </div>
   );
 }
-
