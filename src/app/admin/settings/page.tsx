@@ -81,4 +81,14 @@ export default function AdminSettingsPage() {
             <div className="h-px bg-[var(--color-border)]" />
             <div className="flex justify-between"><span className="text-[var(--color-muted)]">Слот-система</span><span className="font-semibold">30 мин</span></div>
             <div className="h-px bg-[var(--color-border)]" />
-            <div className="flex justify-between"><span className="text-[var,--
+            <div className="flex justify-between"><span className="text-[var(--color-muted)]">Защита от двойного бронирования</span><span className="font-semibold text-emerald-400">Вкл</span></div>
+            <div className="h-px bg-[var(--color-border)]" />
+            <div className="flex justify-between"><span className="text-[var(--color-muted)]">Блокировка слота</span><span className="font-semibold">5 минут</span></div>
+            <div className="h-px bg-[var(--color-border)]" />
+            <div className="flex justify-between"><span className="text-[var(--color-muted)]">Real-time обновления</span><span className="font-semibold text-emerald-400">SSE</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
