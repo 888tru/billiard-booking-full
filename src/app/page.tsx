@@ -22,7 +22,6 @@ export default function HomePage() {
         ))}
       </div>
       <div className="w-full"><ButtonPrimary onClick={() => router.push("/booking")}>ЗАБРОНИРОВАТЬ СТОЛ</ButtonPrimary></div>
-      <button onClick={() => router.push("/admin")} className="mt-4 text-xs text-[var(--color-muted)] underline underline-offset-2">Панель администратора</button>
     </div>
   );
 }
