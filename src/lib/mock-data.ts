@@ -22,6 +22,7 @@ export const CLUB = {
   phone: "+7 (777) 123-45-67",
   open_time: "12:00",
   close_time: "04:00",
+  booking_fee: 1000, // цена брони в тенге, задаётся админом
 };
 
 // ---- Tables ----

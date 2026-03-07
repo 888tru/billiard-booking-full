@@ -21,13 +21,14 @@ export default function TablePage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [bookingFee, setBookingFee] = useState<number>(1000);
 
   useEffect(() => { if (!state.tableId || state.tableId !== id) router.replace("/booking"); }, [state.tableId, id, router]);
   useEffect(() => { if (id && state.date) { setSlots(null); fetch(`/api/slots?table_id=${id}&date=${state.date}`).then(r => r.json()).then(setSlots); } }, [id, state.date]);
+  useEffect(() => { fetch("/api/settings").then(r => r.json()).then(d => setBookingFee(d.booking_fee)); }, []);
 
   const dur = state.duration;
   const isOpen = dur === 0;
-  const total = isOpen ? 0 : state.pricePerHour * dur;
   const ok = state.slotTime && name.trim().length >= 2 && phone.replace(/\D/g, "").length >= 11;
 
   const handleBook = async () => {
@@ -36,7 +37,7 @@ export default function TablePage() {
       const res = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ table_id: id, date: state.date, start_time: state.slotTime, duration: dur, customer_name: name.trim(), phone: phone.replace(/\D/g, "") }) });
       const data = await res.json();
       if (data.booking_id) {
-        sessionStorage.setItem("pending_booking", JSON.stringify({ booking_id: data.booking_id, table_name: state.tableName, hall: state.hallType === "vip" ? "VIP зал" : "Основной зал", date: state.date, time: state.slotTime, duration: dur, price: total, customer_name: name.trim(), phone }));
+        sessionStorage.setItem("pending_booking", JSON.stringify({ booking_id: data.booking_id, table_name: state.tableName, hall: state.hallType === "vip" ? "VIP зал" : "Основной зал", date: state.date, time: state.slotTime, duration: dur, booking_fee: bookingFee, price_per_hour: state.pricePerHour, customer_name: name.trim(), phone }));
         router.push("/payment");
       }
     } catch { alert("Ошибка. Попробуйте снова."); } finally { setLoading(false); }
@@ -51,7 +52,7 @@ export default function TablePage() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#4F8CFF]/5 to-transparent" />
         <div className="relative flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#4F8CFF]/20 to-[#34D399]/10 border border-[var(--color-border)] flex items-center justify-center text-3xl">{state.hallType === "vip" ? "👑" : "🎱"}</div>
-          <div><h2 className="font-bold text-lg">{state.tableName}</h2><p className="text-sm text-[var(--color-muted)]">{fmtDate(state.date)}</p><p className="text-sm font-semibold text-[#34D399] mt-0.5">{state.pricePerHour.toLocaleString()} ₸/час • {dur === 0 ? "Открытый" : `${dur} ч`}</p></div>
+          <div><h2 className="font-bold text-lg">{state.tableName}</h2><p className="text-sm text-[var(--color-muted)]">{fmtDate(state.date)}</p><p className="text-sm font-semibold text-[#34D399] mt-0.5">{state.pricePerHour.toLocaleString()} ₸/час • {isOpen ? "Открытый" : `${dur} ч`}</p></div>
         </div>
       </div>
 
@@ -65,12 +66,27 @@ export default function TablePage() {
 
       {state.slotTime && (
         <div className="animate-slide-up space-y-6">
-          <div><SectionLabel>Детали</SectionLabel><BookingSummaryCard items={[{ label: "Стол", value: state.tableName || "" }, { label: "Дата", value: fmtDate(state.date) }, { label: "Время", value: isOpen ? `с ${state.slotTime} — до закрытия` : `${state.slotTime} — ${endTime(state.slotTime, dur)}` }, { label: "Длительность", value: isOpen ? "Открытый счёт" : `${dur} ч` }, { label: "Стоимость", value: isOpen ? "По факту" : `${total.toLocaleString()} ₸`, highlight: true }]} /></div>
+          <div><SectionLabel>Детали</SectionLabel><BookingSummaryCard items={[
+            { label: "Стол", value: state.tableName || "" },
+            { label: "Дата", value: fmtDate(state.date) },
+            { label: "Время", value: isOpen ? `с ${state.slotTime} — до закрытия` : `${state.slotTime} — ${endTime(state.slotTime, dur)}` },
+            { label: "Длительность", value: isOpen ? "Открытый счёт" : `${dur} ч` },
+            { label: "Цена за час", value: `${state.pricePerHour.toLocaleString()} ₸/час` },
+            { label: "Оплата брони", value: `${bookingFee.toLocaleString()} ₸`, highlight: true },
+          ]} /></div>
+          <div className="bg-[var(--color-card)] border border-amber-500/20 rounded-2xl p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-sm">💡</span>
+              <div>
+                <p className="text-xs font-semibold text-amber-400">Оплата только за бронь</p>
+                <p className="text-[11px] text-[var(--color-muted)]">Стоимость игры оплачивается на месте. Бронь — {bookingFee.toLocaleString()} ₸</p>
+              </div>
+            </div>
+          </div>
           <div><SectionLabel>Ваши данные</SectionLabel><BookingForm name={name} phone={phone} onNameChange={setName} onPhoneChange={setPhone} /></div>
-          <ButtonPrimary onClick={handleBook} disabled={!ok} loading={loading}>{isOpen ? "ЗАБРОНИРОВАТЬ — Открытый счёт" : `ЗАБРОНИРОВАТЬ — ${total.toLocaleString()} ₸`}</ButtonPrimary>
+          <ButtonPrimary onClick={handleBook} disabled={!ok} loading={loading}>ЗАБРОНИРОВАТЬ — {bookingFee.toLocaleString()} ₸</ButtonPrimary>
         </div>
       )}
     </div>
   );
 }
-
