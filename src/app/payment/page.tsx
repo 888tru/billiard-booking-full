@@ -61,8 +61,7 @@ export default function PaymentPage() {
       <SectionLabel>Способ оплаты</SectionLabel>
       <div className="space-y-3 mb-6">
         <PaymentCard icon={<span className="text-2xl">🔴</span>} label="Kaspi Pay" sublabel="Kaspi Bank" selected={prov === "kaspi"} onSelect={() => setProv("kaspi")} />
-        <PaymentCard icon={<span className="text-xl"></span>} label="Apple Pay" sublabel="Быстрая оплата" selected={prov === "apple_pay"} onSelect={() => setProv("apple_pay")} />
-        <PaymentCard icon={<span className="text-xl">G</span>} label="Google Pay" sublabel="Быстрая оплата" selected={prov === "google_pay"} onSelect={() => setProv("google_pay")} />
+        <PaymentCard icon={<span className="text-xl">💳</span>} label="Оплата картой" sublabel="Visa / Mastercard" selected={prov === "card"} onSelect={() => setProv("card")} />
       </div>
 
       <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl p-4 mb-6">
@@ -79,3 +78,4 @@ export default function PaymentPage() {
     </div>
   );
 }
+
